@@ -576,5 +576,4 @@ def get_confidence_color(confidence: float) -> str:
 
 if __name__ == "__main__":
     main()
-if __name__ == "__main__":
-    main()
+
