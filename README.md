@@ -21,121 +21,120 @@ A modular AI-powered document extraction system built with LangChain, OpenAI GPT
 - **Image Processing**: OpenCV, Pillow
 - **Language**: Python 3.8+
 
-## 📂 Project Structure
+## 📋 Project Structure
 
 ```
 agentic_doc_extraction/
 │── data/                     # Sample documents
 │── outputs/                  # Extracted results
 │── src/
-│   │── __init__.py
-│   │── agent.py               # Main orchestrator using LangChain
-│   │── routing.py             # Document type detection
-│   │── ocr.py                 # OCR + preprocessing
-│   │── extraction.py          # LLM extraction chain
-│   │── validation.py          # Regex + business rules
-│   │── scoring.py             # Confidence scoring logic
-│   │── ui_streamlit.py        # Streamlit frontend
-│   │── schemas.py             # Pydantic models & JSON schemas
-│   │── utils.py               # Helper functions
-│── requirements.txt
-│── README.md
+│   │── agent.py              # Main orchestrator using LangChain
+│   │── routing.py            # Document type detection
+│   │── ocr.py                # OCR + preprocessing
+│   │── extraction.py         # LLM extraction chain
+│   │── validation.py         # Regex + business rules
+│   │── scoring.py            # Confidence scoring logic
+│   │── ui_streamlit.py       # Streamlit frontend
+│   │── schemas.py            # Pydantic models & JSON schemas
+│   │── utils.py              # Helper functions
 ```
 
-## 🔧 Setup Instructions
+## 🏗️ Architectural Approach
 
-### 1. Clone and Install Dependencies
+The Agentic Document Extraction System uses a modular, pipeline-based architecture that combines several AI techniques for intelligent document processing:
 
-```bash
-# Clone the repository
-cd agentic_doc_extraction
-
-# Create virtual environment (recommended)
-python -m venv venv
-
-# Activate virtual environment
-# Windows:
-venv\Scripts\activate
-# macOS/Linux:
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
+```mermaid
+flowchart TD
+    A[Document Upload] --> B[Document Preprocessing]
+    B --> C[OCR & Text Extraction]
+    C --> D{Document Type Detection}
+    D --> E[Invoice Processor]
+    D --> F[Medical Bill Processor]
+    D --> G[Prescription Processor]
+    
+    E & F & G --> H[Field Extraction Engine]
+    H --> I[Data Validation]
+    I --> J[Confidence Scoring]
+    J --> K[Final Output]
+    
+    subgraph "Document Preprocessing"
+        B --> B1[Image Enhancement]
+        B --> B2[Layout Analysis]
+        B --> B3[Digital vs. Scanned Detection]
+    end
+    
+    subgraph "Field Extraction Engine"
+        H --> H1[Schema Selection]
+        H --> H2[LLM Contextual Analysis]
+        H --> H3[Entity Recognition]
+        H --> H4[Table/List Extraction]
+    end
+    
+    subgraph "Validation & Confidence"
+        I --> I1[Regex Patterns]
+        I --> I2[Business Rules]
+        I --> I3[Cross-field Validation]
+        J --> J1[LLM Confidence]
+        J --> J2[OCR Quality Score]
+        J --> J3[Validation Passage Rate]
+    end
+    
+    style A fill:#d0e0ff,stroke:#3070b0,stroke-width:2px
+    style K fill:#d0ffe0,stroke:#30b070,stroke-width:2px
+    style D fill:#ffd0e0,stroke:#d04070,stroke-width:2px
 ```
 
-### 2. Configure Environment
+## 🧠 Approach Methodology
 
-**Option 1: Using .env file (Recommended)**
+### 1. Intelligent Document Routing
 
-1. Copy the example environment file:
-```bash
-copy .env.example .env
-```
+The system first analyzes document content and structure to automatically classify it into a specific document type. This routing process considers:
 
-2. Edit `.env` file and add your OpenAI API key:
-```env
-OPENAI_API_KEY=your_actual_openai_api_key_here
-OPENAI_MODEL_GPT4=gpt-4o
-OPENAI_MODEL_GPT4_MINI=gpt-4o-mini
-DEFAULT_OUTPUT_DIR=outputs
-```
+- Key phrases and terminology
+- Document layout patterns
+- Presence of specific fields
+- Table structures and formatting
 
-**Option 2: Environment Variables**
+### 2. Adaptive OCR Pipeline
 
-Set the environment variable directly:
+For documents requiring OCR:
 
-```bash
-# Windows
-set OPENAI_API_KEY=your_openai_api_key_here
+- **Image Preprocessing**: Automatic adjustments for contrast, rotation, and noise reduction
+- **Hybrid OCR**: Combines multiple OCR engines for optimal results
+- **Post-OCR Cleanup**: Corrects common OCR errors and improves text quality
 
-# macOS/Linux
-export OPENAI_API_KEY=your_openai_api_key_here
-```
+### 3. LLM-Powered Extraction
 
-### 3. Install OCR Dependencies
+The extraction engine uses OpenAI's GPT models with:
 
-For pytesseract (OCR engine):
+- **Schema-Guided Extraction**: Pydantic models define expected fields and types
+- **Contextual Understanding**: Identifies fields based on surrounding context
+- **Format Recognition**: Adapts to various formats within the same document type
+- **Confidence Assessment**: Model reports confidence for each extracted value
 
-**Windows:**
-1. Download and install Tesseract from: https://github.com/UB-Mannheim/tesseract/wiki
-2. Add Tesseract to your PATH or set the path in your code
+### 4. Multi-layered Validation
 
-**macOS:**
-```bash
-brew install tesseract
-```
+The validation layer applies:
 
-**Linux (Ubuntu/Debian):**
-```bash
-sudo apt update
-sudo apt install tesseract-ocr
-```
+- **Pattern Matching**: Validates fields using regex patterns (e.g., dates, numbers, IDs)
+- **Business Logic**: Applies document-specific rules (e.g., totals must match sum of line items)
+- **Consistency Checks**: Verifies that related fields are consistent
 
-## 🚀 Run Instructions
+### 5. Advanced Confidence Scoring
 
-**Note**: Make sure you have configured your OpenAI API key in the `.env` file before running the application.
+Confidence scores for each field combine:
 
-### Option 1: Streamlit UI (Recommended)
+- **LLM Confidence**: Self-reported confidence from the language model (60%)
+- **OCR Quality**: Assessment of text extraction quality (20%)
+- **Validation Success**: Whether the field passes validation rules (20%)
 
-```bash
-python run_app.py
-```
+### 6. Interactive User Interface
 
-Then open your browser to `http://localhost:8501`
-
-The Streamlit UI will automatically load your API key from the `.env` file.
-
-### Option 2: Python API
-
-```python
-from src.agent import process_document_pipeline
-
-# Process a single document (API key loaded from .env automatically)
-results = process_document_pipeline(
-    file_path="path/to/your/document.pdf",
-    save_results=True
-)
-```
+The Streamlit UI provides:
+- Real-time processing feedback
+- Interactive visualization of extraction results
+- Field-by-field confidence indicators
+- Structured data view and JSON export
 
 ## 📄 Supported Document Types
 
@@ -164,226 +163,20 @@ results = process_document_pipeline(
 }
 ```
 
-## 🎯 Confidence Scoring
+## 🎯 Benefits of This Approach
 
-The system uses a weighted confidence scoring approach:
+- **Accuracy**: Multi-layered approach results in higher extraction accuracy
+- **Transparency**: Detailed confidence scoring shows reliability of extracted data
+- **Adaptability**: System can handle variations in document format and quality
+- **Extensibility**: New document types can be added with minimal code changes
+- **Robustness**: Graceful degradation when dealing with poor quality documents
 
-```
-confidence = (llm_score * 0.6) + (ocr_quality * 0.2) + (validation_pass * 0.2)
-```
+## 📈 Performance Considerations
 
-- **LLM Score**: Self-reported confidence from the language model
-- **OCR Quality**: Quality of text extraction (1.0 for text PDFs, variable for scanned images)
-- **Validation Pass**: Whether extracted data passes validation rules
-
-## 📝 Troubleshooting
-
-### Common Issues
-
-1. **OpenAI API Key**: Ensure your API key is valid and has sufficient credits
-2. **Missing Dependencies**: Run `pip install -r requirements.txt`
-3. **Tesseract OCR**: Make sure Tesseract is properly installed and in PATH
-4. **File Formats**: Check that uploaded files are in supported formats
-
-### Performance Tips
-
-- Use text-based PDFs when possible (faster than OCR)
-- Optimize image resolution for OCR (300 DPI recommended)
-- Process documents in batches for efficiency
-- Consider using smaller LLM models for faster processing
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🙏 Acknowledgments
-
-- LangChain for the orchestration framework
-- OpenAI for the language models
-- Streamlit for the web interface
-- The open-source OCR community
-  "doc_type": "invoice",
-  "fields": [
-    {
-      "name": "invoice_number",
-      "value": "INV-2024-001",
-      "confidence": 0.95,
-      "source": {"page": 1, "bbox": [100, 150, 250, 180]}
-    },
-    {
-      "name": "vendor_name",
-      "value": "ABC Corporation", 
-      "confidence": 0.92,
-      "source": {"page": 1, "bbox": [100, 200, 300, 230]}
-    },
-    {
-      "name": "total_amount",
-      "value": "1250.00",
-      "confidence": 0.88,
-      "source": {"page": 1, "bbox": [400, 500, 500, 530]}
-    }
-  ],
-  "overall_confidence": 0.91,
-  "validation": {
-    "passed_rules": ["totals_match", "date_format_valid"],
-    "failed_rules": [],
-    "notes": "Document appears valid"
-  },
-  "structured_data": {
-    "invoice_number": "INV-2024-001",
-    "vendor_name": "ABC Corporation",
-    "total_amount": 1250.00,
-    "line_items": [
-      {
-        "description": "Software License",
-        "quantity": 1,
-        "unit_price": 1000.00,
-        "total_price": 1000.00
-      }
-    ]
-  }
-}
-```
-
-## 🎯 Confidence Scoring
-
-The system uses a weighted confidence scoring approach:
-
-```
-confidence = (llm_score * 0.6) + (ocr_quality * 0.2) + (validation_pass * 0.2)
-```
-
-- **LLM Score**: Self-reported confidence from the language model
-- **OCR Quality**: Quality of text extraction (1.0 for text PDFs, variable for scanned images)
-- **Validation Pass**: Whether extracted data passes validation rules
-
-## 🔍 Validation Rules
-
-### Invoice Validation
-- Invoice number present
-- Valid total amounts
-- Line items sum matches total
-- Valid date formats
-
-### Medical Bill Validation
-- Patient name present
-- Hospital information available
-- Balance calculations correct
-- Valid service dates
-
-### Prescription Validation
-- Patient and doctor information
-- Medication list with dosages
-- Valid prescription date
-- Proper dosage formats
-
-## 🛡️ Error Handling
-
-The system includes comprehensive error handling:
-
-- **OCR Failures**: Graceful degradation with multiple OCR approaches
-- **LLM Failures**: Fallback to keyword-based extraction
-- **Validation Errors**: Non-blocking warnings and confidence adjustments
-- **File Format Issues**: Clear error messages and supported format guidance
-
-## 🔧 Customization
-
-### Adding New Document Types
-
-1. Add schema to `schemas.py`:
-```python
-class NewDocumentSchema(BaseModel):
-    field1: Optional[str] = None
-    field2: Optional[float] = None
-```
-
-2. Update routing in `routing.py`
-3. Add validation rules in `validation.py`
-4. Update UI in `ui_streamlit.py`
-
-### Adjusting Confidence Weights
-
-```python
-from src.scoring import ConfidenceScorer
-
-scorer = ConfidenceScorer(
-    llm_weight=0.7,      # Increase LLM importance
-    ocr_weight=0.1,      # Decrease OCR importance  
-    validation_weight=0.2
-)
-```
-
-## 📝 Troubleshooting
-
-### Import Errors
-
-If you encounter import errors when running the application:
-
-1. **Test your setup first:**
-   ```bash
-   python test_setup.py
-   ```
-
-2. **Use the recommended run script:**
-   ```bash
-   python run_app.py
-   ```
-
-3. **If running Streamlit directly, run from src directory:**
-   ```bash
-   cd src
-   streamlit run ui_streamlit.py
-   ```
-
-### Common Issues
-
-1. **OpenAI API Key**: Ensure your API key is valid and has sufficient credits
-2. **Missing Dependencies**: Run `pip install -r requirements.txt`
-3. **Tesseract OCR**: Make sure Tesseract is properly installed and in PATH
-4. **File Formats**: Check that uploaded files are in supported formats
-5. **Memory**: Large PDF files may require sufficient system memory
-
-### Optional Dependencies
-
-Some features require optional dependencies:
-
-- **pdfplumber**: For advanced PDF table extraction
-- **pytesseract**: For OCR functionality on scanned documents  
-- **opencv-python**: For advanced image preprocessing
-
-Install them with:
-```bash
-pip install pdfplumber pytesseract opencv-python
-```
-
-The system will work with reduced functionality if these are not available.
-
-### Performance Tips
-
-- Use text-based PDFs when possible (faster than OCR)
-- Optimize image resolution for OCR (300 DPI recommended)
-- Process documents in batches for efficiency
-- Consider using smaller LLM models for faster processing
-
-## 📈 Future Enhancements
-
-- Support for additional document types
-- Multi-language document support
-- Advanced table extraction
-- Integration with cloud storage
-- API endpoints for integration
-- Real-time processing monitoring
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new functionality
-4. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+- Processing time varies based on document complexity and quality
+- OCR-heavy processes require more computational resources
+- LLM API calls are optimized to reduce token usage
+- Batch processing for efficiency with multiple documents
 
 ## 🙏 Acknowledgments
 
