@@ -92,11 +92,6 @@ set OPENAI_API_KEY=your_openai_api_key_here
 export OPENAI_API_KEY=your_openai_api_key_here
 ```
 
-**Get your OpenAI API Key:**
-1. Visit https://platform.openai.com/api-keys
-2. Create a new API key
-3. Copy and paste it into your `.env` file
-
 ### 3. Install OCR Dependencies
 
 For pytesseract (OCR engine):
@@ -122,20 +117,8 @@ sudo apt install tesseract-ocr
 
 ### Option 1: Streamlit UI (Recommended)
 
-**Method 1: Using the run script (Recommended)**
 ```bash
 python run_app.py
-```
-
-**Method 2: From src directory**
-```bash
-cd src
-streamlit run ui_streamlit.py
-```
-
-**Method 3: Direct streamlit command**
-```bash
-streamlit run src/ui_streamlit.py
 ```
 
 Then open your browser to `http://localhost:8501`
@@ -152,56 +135,73 @@ results = process_document_pipeline(
     file_path="path/to/your/document.pdf",
     save_results=True
 )
-
-print(f"Document type: {results['doc_type']}")
-print(f"Confidence: {results['overall_confidence']:.2f}")
-
-# Or pass API key explicitly if needed
-results = process_document_pipeline(
-    file_path="path/to/your/document.pdf",
-    api_key="your_openai_api_key",  # Optional if set in .env
-    save_results=True
-)
-```
-
-### Option 3: Batch Processing
-
-```python
-from src.agent import DocumentExtractionAgent
-
-# API key loaded from .env automatically
-agent = DocumentExtractionAgent()
-
-# Process multiple documents
-file_paths = ["doc1.pdf", "doc2.png", "doc3.pdf"]
-results = agent.batch_process_documents(file_paths)
 ```
 
 ## 📄 Supported Document Types
 
-### 1. Invoices
-- Invoice number, date, due date
-- Vendor and customer information
-- Line items with quantities, prices
-- Subtotal, tax, total amounts
-
-### 2. Medical Bills
-- Patient information
-- Hospital/clinic details
-- Service dates and descriptions
-- Insurance information
-- Billing amounts and balances
-
-### 3. Prescriptions
-- Patient and doctor information
-- Prescription date
-- Medications with dosages
-- Instructions and notes
+- **Invoices**: Invoice number, date, vendor information, line items, totals
+- **Medical Bills**: Patient information, hospital details, services, charges
+- **Prescriptions**: Patient and doctor information, medications with dosages
 
 ## 📊 Example Output
 
 ```json
 {
+  "doc_type": "invoice",
+  "fields": [
+    {
+      "name": "invoice_number",
+      "value": "INV-2024-001",
+      "confidence": 0.95
+    },
+    // Additional fields...
+  ],
+  "overall_confidence": 0.91,
+  "validation": {
+    "passed_rules": ["totals_match", "date_format_valid"],
+    "failed_rules": []
+  }
+}
+```
+
+## 🎯 Confidence Scoring
+
+The system uses a weighted confidence scoring approach:
+
+```
+confidence = (llm_score * 0.6) + (ocr_quality * 0.2) + (validation_pass * 0.2)
+```
+
+- **LLM Score**: Self-reported confidence from the language model
+- **OCR Quality**: Quality of text extraction (1.0 for text PDFs, variable for scanned images)
+- **Validation Pass**: Whether extracted data passes validation rules
+
+## 📝 Troubleshooting
+
+### Common Issues
+
+1. **OpenAI API Key**: Ensure your API key is valid and has sufficient credits
+2. **Missing Dependencies**: Run `pip install -r requirements.txt`
+3. **Tesseract OCR**: Make sure Tesseract is properly installed and in PATH
+4. **File Formats**: Check that uploaded files are in supported formats
+
+### Performance Tips
+
+- Use text-based PDFs when possible (faster than OCR)
+- Optimize image resolution for OCR (300 DPI recommended)
+- Process documents in batches for efficiency
+- Consider using smaller LLM models for faster processing
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🙏 Acknowledgments
+
+- LangChain for the orchestration framework
+- OpenAI for the language models
+- Streamlit for the web interface
+- The open-source OCR community
   "doc_type": "invoice",
   "fields": [
     {
